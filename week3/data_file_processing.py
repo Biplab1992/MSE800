@@ -1,4 +1,5 @@
 import csv
+import pandas as pd
 
 class FileProcessor:
     """Class to handle file processing for different formats."""
@@ -12,6 +13,8 @@ class FileProcessor:
             return self._process_csv()
         elif self.file_path.endswith(".txt"):
             return self._process_txt()
+        elif self.file_path.endswith(".parquet"):
+            return self._process_parquet()
         else:
             return "Unsupported file format."
 
@@ -36,6 +39,16 @@ class FileProcessor:
             return "TXT file not found."
         return [line.strip() for line in content]
 
+    def _process_parquet(self):
+        """Processes Parquet files."""
+        try:
+            df = pd.read_parquet(self.file_path)
+            return df.head()  # Display the first few rows
+        except FileNotFoundError:
+            return "Parquet file not found."
+        except Exception as e:
+            return f"Error processing Parquet: {e}"
+
 def main():
     """Main function to execute file processing."""
     file_path = input("Enter the file path: ")
@@ -43,9 +56,8 @@ def main():
     result = processor.process_file()
     
     print("\nProcessed Data:")
-    if isinstance(result, list):
-        for line in result:
-            print(line)
+    if isinstance(result, list) or isinstance(result, pd.DataFrame):
+        print(result)
     else:
         print(result)
 
