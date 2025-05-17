@@ -13,7 +13,7 @@ def menu():
     print("8. Exit")
 
 def main():
-    create_table()  # Ensures users and courses tables exist before running
+    create_table()  
     
     while True:
         menu()
@@ -30,7 +30,7 @@ def main():
                 for user in users:
                     print(user)
             else:
-                print("⚠️ No users found.")
+                print(" No users found.")
         
         elif choice == '3':
             name = input("Enter name to search: ")
@@ -39,7 +39,7 @@ def main():
                 for user in users:
                     print(user)
             else:
-                print("⚠️ No matching user found.")
+                print(" No matching user found.")
         
         elif choice == '4':
             user_id = input("Enter user ID to delete: ")
@@ -47,7 +47,7 @@ def main():
                 user_id = int(user_id)
                 delete_user(user_id)
             except ValueError:
-                print("❌ Invalid ID format. Please enter a number.")
+                print(" Invalid ID format. Please enter a number.")
         
         elif choice == '5':
             user_id = input("Enter user ID: ")
@@ -59,9 +59,9 @@ def main():
                     for user in users:
                         print(user)
                 else:
-                    print("⚠️ No matching user found. Check the ID and name.")
+                    print(" No matching user found. Check the ID and name.")
             except ValueError:
-                print("❌ Invalid ID format. Please enter a number.")
+                print(" Invalid ID format. Please enter a number.")
         
         elif choice == '6':
             course_id = input("Enter course ID: ")
@@ -72,7 +72,7 @@ def main():
                 units = int(units)
                 insert_course(course_id, course_name, units)
             except ValueError:
-                print("❌ Invalid course ID or units format. Please enter numbers.")
+                print(" Invalid course ID or units format. Please enter numbers.")
         
         elif choice == '7':
             course_id = input("Enter course ID: ")
@@ -84,16 +84,16 @@ def main():
                     for course in courses:
                         print(course)
                 else:
-                    print("⚠️ No matching course found.")
+                    print(" No matching course found.")
             except ValueError:
-                print("❌ Invalid course ID format. Please enter a number.")
+                print(" Invalid course ID format. Please enter a number.")
         
         elif choice == '8':
-            print("👋 Goodbye!")
+            print(" Goodbye!")
             break
         
         else:
-            print("❌ Invalid choice. Please select a valid option.")
+            print(" Invalid choice. Please select a valid option.")
 
 if __name__ == "__main__":
     main()
