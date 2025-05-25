@@ -13,7 +13,7 @@ class CarManager:
         available = input("Is the car available (yes/no)? ").strip().lower() == "yes"
         min_rent_period = int(input("Enter min rental period in days: "))
         max_rent_period = int(input("Enter max rental period in days: "))
-        bonus_points = int(input("Enter bonus loyalty points for this car (0 for standard vehicles): "))
+        bonus_points = int(input("Enter bonus loyalty points for this car (10 for standard / 20 for premium / 30 for luxury vehicles): "))
 
         database.add_car(car_id, make, model, year, mileage, available, min_rent_period, max_rent_period)
         database.cars[car_id]["bonus_points"] = bonus_points  # Store bonus loyalty points
