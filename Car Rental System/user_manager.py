@@ -1,39 +1,51 @@
 import database
 
 class UserManager:
-    """
-    Provides user-related functionality such as registration,
-    login, and checking customer records.
-    """
-    def __init__(self):
-        pass  # No longer expecting a database instance
+    def register_user(self):
+        """
+        Registers a new user in the system.
+        """
+        name = input("Enter your full name: ").strip()
+        email = input("Enter your email: ").strip()
+        password = input("Enter your password: ").strip()
+        role = input("Enter user role (customer/admin): ").strip().lower() or "customer"
 
-    def register_user(self, name, email, password):
-        """
-        Registers a new user by adding them to the database.
-        """
         if database.get_user(email):
             print(f"Registration failed: A user with email '{email}' already exists.")
         else:
-            database.add_user(name, email, password)
-            print(f"User {name} registered successfully.")
+            database.add_user(name, email, password, role)
+            print(f"User {name} registered successfully with role: {role}")
 
-    def login_user(self, email, password):
+    def login_user(self):
         """
-        Logs in a user by verifying their credentials.
+        Authenticates user login.
         """
+        email = input("Enter your email: ").strip()
+        password = input("Enter your password: ").strip()
+
         user = database.get_user(email)
         if user and user["password"] == password:
-            print(f"User {user['name']} logged in successfully.")
+            print(f"User {user['name']} logged in successfully as {user['role']}.")
+            return user["role"], email
         else:
             print("Invalid email or password.")
+            return None, None
 
-    def check_customer_records(self, email):
+    def view_loyalty_points(self, email):
         """
-        Retrieves and displays customer records associated with an email.
+        Allows customers to check their loyalty points.
         """
-        records = database.get_customer_records(email)
-        if records:
-            print(f"Customer records for {email}:\n" + "\n".join(records))
+        points = database.get_loyalty_points(email)
+        print(f"Your loyalty points: {points}")
+        print(f"Your reward tier: {database.get_reward_tier(email)}")
+
+    def redeem_loyalty_points(self, email):
+        """
+        Allows customers to redeem loyalty points for discounts.
+        """
+        points_to_redeem = int(input("Enter the number of points to redeem: "))
+
+        if database.redeem_loyalty_points(email, points_to_redeem):
+            print(f"Successfully redeemed {points_to_redeem} points.")
         else:
-            print(f"No records found for {email}.")
+            print("Insufficient loyalty points.")

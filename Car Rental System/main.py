@@ -1,33 +1,19 @@
 from user_manager import UserManager
+from booking_manager import BookingManager
+
+user_manager = UserManager()
+booking_manager = BookingManager()
 
 def main():
-    user_manager = UserManager()
+    role, email = user_manager.login_user()
 
-    while True:
-        print("\n=== Car Rental System ===")
-        print("1. Register User")
-        print("2. Login User")
-        print("3. Check Customer Records")
-        print("4. Exit")
-        choice = input("Enter your choice (1-4): ").strip()
+    if role == "customer":
+        user_manager.view_loyalty_points(email)
+        booking_manager.request_rental(email)
+        user_manager.redeem_loyalty_points(email)
 
-        if choice == "1":
-            name = input("Enter your full name: ").strip()
-            email = input("Enter your email: ").strip()
-            password = input("Enter your password: ").strip()
-            user_manager.register_user(name, email, password)
-        elif choice == "2":
-            email = input("Enter your email: ").strip()
-            password = input("Enter your password: ").strip()
-            user_manager.login_user(email, password)
-        elif choice == "3":
-            email = input("Enter your email to check records: ").strip()
-            user_manager.check_customer_records(email)
-        elif choice == "4":
-            print("Exiting the system. Goodbye!")
-            break
-        else:
-            print("Invalid option. Please choose a number between 1 and 4.")
+    elif role == "admin":
+        booking_manager.approve_rental()
 
 if __name__ == "__main__":
     main()
