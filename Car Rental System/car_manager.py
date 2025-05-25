@@ -2,22 +2,19 @@ import database
 
 class CarManager:
     def add_car(self):
-    """
-    Admin adds a car to the database.
-    """
-    car_id = input("Enter car ID: ").strip()
-    make = input("Enter make: ").strip()
-    model = input("Enter model: ").strip()
-    year = input("Enter year: ").strip()
-    mileage = input("Enter mileage: ").strip()
-    available = input("Is the car available (yes/no)? ").strip().lower() == "yes"
-    min_rent_period = int(input("Enter min rental period in days: "))
-    max_rent_period = int(input("Enter max rental period in days: "))
-    bonus_points = int(input("Enter bonus loyalty points for this car (10 for standard / 20 for premium / 30 for luxury vehicles): "))
+        car_id = input("Enter car ID: ").strip()
+        make = input("Enter make: ").strip()
+        model = input("Enter model: ").strip()
+        year = input("Enter year: ").strip()
+        mileage = input("Enter mileage: ").strip()
+        available = input("Is the car available (yes/no)? ").strip().lower() == "yes"
+        min_rent_period = int(input("Enter min rental period in days: "))
+        max_rent_period = int(input("Enter max rental period in days: "))
+        bonus_points = int(input("Enter bonus loyalty points for this car (10 for standard / 20 for premium / 30 for luxury vehicles): "))
 
-    database.add_car(car_id, make, model, year, mileage, available, min_rent_period, max_rent_period)
-    database.cars[car_id]["bonus_points"] = bonus_points  # Store bonus loyalty points
-    print(f"Car added successfully. Bonus loyalty points: {bonus_points}")
+        database.add_car(car_id, make, model, year, mileage, available, min_rent_period, max_rent_period)
+        database.cars[car_id]["bonus_points"] = bonus_points  # Store bonus loyalty points
+        print(f"Car added successfully. Bonus loyalty points: {bonus_points}")
 
     def list_cars(self):
         """
