@@ -59,22 +59,28 @@ def admin_menu():
     while True:
         print("\n--- Admin Menu ---")
         print("1. Add Car")
-        print("2. Approve Rental Requests")
-        print("3. Update Car Loyalty Points")
-        print("4. Logout")
-        choice = input("Enter your choice (1-4): ").strip()
+        print("2. List Cars")
+        print("3. Update Car")
+        print("4. Delete Car")
+        print("5. Approve Rental Requests")
+        print("6. Update Car Loyalty Points")
+        print("7. Logout")
+        choice = input("Enter your choice (1-7): ").strip()
 
         if choice == "1":
             car_manager.add_car()
         elif choice == "2":
-            booking_manager.approve_rental()
+            car_manager.list_cars()
         elif choice == "3":
-            car_manager.update_car_loyalty_points()
+            car_manager.update_car()
         elif choice == "4":
+            car_manager.delete_car()
+        elif choice == "5":
+            booking_manager.approve_rental()
+        elif choice == "6":
+            car_manager.update_car_loyalty_points()
+        elif choice == "7":
             print("Logging out...")
             break
         else:
             print("Invalid choice. Try again.")
-
-if __name__ == "__main__":
-    main()
