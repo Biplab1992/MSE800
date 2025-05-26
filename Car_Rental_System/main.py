@@ -34,14 +34,14 @@ def customer_menu(email):
     """
     while True:
         print("\n--- Customer Menu ---")
-        print("1. Request Rental")
+        print("1. View Available Cars & Request Rental")
         print("2. View Loyalty Points")
         print("3. Redeem Loyalty Points")
         print("4. Logout")
         choice = input("Enter your choice (1-4): ").strip()
 
         if choice == "1":
-            booking_manager.request_rental(email)
+            booking_manager.request_rental(email)  # Calls the rental process directly
         elif choice == "2":
             user_manager.view_loyalty_points(email)
         elif choice == "3":
@@ -71,7 +71,7 @@ def admin_menu(email):
         elif choice == "2":
             car_manager.list_cars()
         elif choice == "3":
-            update_car_workflow()
+            car_manager.update_car()  # Directly calls update_car()
         elif choice == "4":
             car_manager.delete_car()
         elif choice == "5":
@@ -81,14 +81,6 @@ def admin_menu(email):
             break
         else:
             print("Invalid choice. Try again.")
-
-def update_car_workflow():
-    """
-    Ensures a smooth workflow for updating cars.
-    """
-    car_manager.list_cars()  # First, show available cars for better decision-making
-    print("\nEnter the Car ID to update:")
-    car_manager.update_car()
 
 if __name__ == "__main__":
     main()

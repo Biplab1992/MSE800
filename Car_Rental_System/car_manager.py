@@ -1,7 +1,11 @@
 import sqlite3
 import database
+import os
 
-DB_PATH = "database/rental_system.db"
+# Ensure correct database path within Car_Rental_System/database
+BASE_DIR = os.path.abspath(os.path.join(os.getcwd(), "Car_Rental_System"))
+DB_DIR = os.path.join(BASE_DIR, "database")
+DB_PATH = os.path.join(DB_DIR, "rental_system.db")
 
 class CarManager:
     def add_car(self):
@@ -44,15 +48,50 @@ class CarManager:
             print("No cars available in the system.")
 
     def update_car(self):
-        car_id = input("Enter car ID to update: ").strip()
+        """
+        Admin updates car details after viewing available cars.
+        """
+        print("\n--- Available Cars ---")
+        self.list_cars()  # Show cars before updating
+        
+        car_id = input("\nEnter the Car ID to update: ").strip()
+        
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM cars WHERE car_id = ?", (car_id,))
+        car = cursor.fetchone()
+        conn.close()
+
+        if not car:
+            print(f"Error: Car ID {car_id} not found. Please enter a valid ID.")
+            return
+
         updated_info = {}
-        for key in ["make", "model", "year", "mileage", "available", "min_rent_period", "max_rent_period", "bonus_points"]:
+
+        # Prompt for new values
+        for key in ["make", "model", "year", "mileage", "min_rent_period", "max_rent_period"]:
             new_value = input(f"Enter new {key} (leave blank to keep current): ").strip()
             if new_value:
-                updated_info[key] = int(new_value) if key in ["min_rent_period", "max_rent_period", "bonus_points"] else new_value
+                updated_info[key] = int(new_value) if key in ["year", "mileage", "min_rent_period", "max_rent_period"] else new_value
+
+        # Ensure valid input for availability
+        new_value = input("Is the car available (yes/no)? ").strip().lower()
+        updated_info["available"] = 1 if new_value == "yes" else 0
+
+        # Ensure valid bonus points input
+        while True:
+            try:
+                bonus_points = int(input("Enter bonus loyalty points for this car (10 for standard / 20 for premium / 30 for luxury vehicles): "))
+                if bonus_points in [10, 20, 30]:
+                    updated_info["bonus_points"] = bonus_points
+                    break
+                else:
+                    print("Invalid bonus points! Please enter either 10, 20, or 30.")
+            except ValueError:
+                print("Invalid input! Please enter a number.")
 
         database.update_car(car_id, updated_info)
-
+        print(f"Car {car_id} has been successfully updated with new information.")
 
     def delete_car(self):
         """
