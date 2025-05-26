@@ -6,9 +6,6 @@ DB_PATH = os.path.join("Car_Rental_System", "database", "rental_system.db")
 
 class CarManager:
     def add_car(self):
-        """
-        Admin adds a car to the database. Bonus points must be 10, 20, or 30.
-        """
         car_id = input("Enter car ID: ").strip()
         make = input("Enter make: ").strip()
         model = input("Enter model: ").strip()
@@ -33,9 +30,6 @@ class CarManager:
         print(f"Car added successfully. Bonus loyalty points: {bonus_points}")
 
     def list_cars(self):
-        """
-        Admin views all available cars.
-        """
         cars = database.list_cars()
         if cars:
             print("\n--- Car List ---")
@@ -45,9 +39,6 @@ class CarManager:
             print("No cars available in the system.")
 
     def update_car(self):
-        """
-        Admin updates car details after viewing available cars.
-        """
         print("\n--- Available Cars ---")
         self.list_cars()
         
@@ -91,9 +82,6 @@ class CarManager:
         print(f"Car {car_id} has been successfully updated with new information.")
 
     def delete_car(self):
-        """
-        Admin deletes a car from the system.
-        """
         car_id = input("Enter car ID to delete: ").strip()
         
         # Call the delete function from database.py

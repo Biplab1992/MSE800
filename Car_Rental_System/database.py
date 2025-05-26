@@ -1,14 +1,9 @@
 import sqlite3
 import os
 
-# Define the database path directly
 DB_PATH = os.path.join("Car_Rental_System", "database", "rental_system.db")
 
-# # Ensure database directory exists
-# os.makedirs(DB_DIR, exist_ok=True)
-
 def create_tables():
-    """Creates all necessary tables in the SQLite database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
@@ -57,7 +52,6 @@ if __name__ == "__main__":
 
 # User Management Functions
 def add_user(name, email, password, role="customer"):
-    """Registers a new user in the database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("INSERT INTO users (email, name, password, role) VALUES (?, ?, ?, ?)", (email, name, password, role))
@@ -65,7 +59,6 @@ def add_user(name, email, password, role="customer"):
     conn.close()
 
 def get_user(email):
-    """Retrieves user details from the database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users WHERE email=?", (email,))
@@ -75,7 +68,6 @@ def get_user(email):
 
 # Car Management Functions
 def add_car(car_id, make, model, year, mileage, available, min_rent_period, max_rent_period, bonus_points):
-    """Adds a new car to the database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("INSERT INTO cars (car_id, make, model, year, mileage, available, min_rent_period, max_rent_period, bonus_points) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
@@ -84,7 +76,6 @@ def add_car(car_id, make, model, year, mileage, available, min_rent_period, max_
     conn.close()
 
 def list_cars():
-    """Retrieves all available cars from the database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM cars")
@@ -93,7 +84,6 @@ def list_cars():
     return cars
 
 def update_car(car_id, updated_info):
-    """Updates car details in the database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     for key, value in updated_info.items():
@@ -102,7 +92,6 @@ def update_car(car_id, updated_info):
     conn.close()
 
 def delete_car(car_id):
-    """Deletes a car from the database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("DELETE FROM cars WHERE car_id=?", (car_id,))
@@ -112,7 +101,6 @@ def delete_car(car_id):
 
 # Rental Management Functions
 def add_rental(booking_id, customer_email, car_id, rental_days, total_cost):
-    """Adds a rental request to the database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("INSERT INTO rentals (booking_id, customer_email, car_id, rental_days, total_cost) VALUES (?, ?, ?, ?, ?)",
@@ -121,7 +109,6 @@ def add_rental(booking_id, customer_email, car_id, rental_days, total_cost):
     conn.close()
 
 def list_rentals():
-    """Retrieves all rental requests from the database."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM rentals")
@@ -130,7 +117,6 @@ def list_rentals():
     return rentals
 
 def update_rental_status(booking_id, status):
-    """Updates the status of a rental request."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("UPDATE rentals SET status = ? WHERE booking_id = ?", (status, booking_id))

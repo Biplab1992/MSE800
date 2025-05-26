@@ -1,13 +1,10 @@
 import database 
-import sqlite3
 import os
 
-# Define the database path directly
 DB_PATH = os.path.join("Car_Rental_System", "database", "rental_system.db")
 
 class UserManager:
     def register_user(self):
-        """Registers a new user in the system."""
         name = input("Enter your full name: ").strip()
         email = input("Enter your email: ").strip()
         password = input("Enter your password: ").strip()
@@ -20,7 +17,6 @@ class UserManager:
             print(f"User {name} registered successfully with role: {role}")
 
     def login_user(self):
-        """Authenticates a user based on email and password."""
         email = input("Enter your email: ").strip()
         password = input("Enter your password: ").strip()
         user = database.get_user(email)
@@ -37,7 +33,6 @@ class UserManager:
         return None, None
 
     def view_loyalty_points(self, email):
-        """Displays the customer's loyalty points."""
         user = database.get_user(email)
 
         if user:

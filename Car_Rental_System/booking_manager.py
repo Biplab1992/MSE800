@@ -4,15 +4,10 @@ import uuid
 import datetime
 import os
 
-# Define the database path directly
 DB_PATH = os.path.join("Car_Rental_System", "database", "rental_system.db")
 
 class BookingManager:
     def request_rental(self, customer_email):
-        """
-        Allows the customer to view available cars, select one, and request a rental.
-        Offers the option to redeem loyalty points if the user has 100+ points.
-        """
         print("\n--- Available Cars for Rental ---")
         cars = database.list_cars()
 
@@ -38,15 +33,15 @@ class BookingManager:
 
         # Check car availability before booking
         if selected_car[5] == 0:
-            print(f"Sorry, the **{selected_car[1]} {selected_car[2]}** (ID: {car_id}) is **not available** for rental right now.")
+            print(f"Sorry, the {selected_car[1]} {selected_car[2]} (ID: {car_id}) is not available for rental right now.")
             return
 
         # Enter rental dates
         try:
             today = datetime.date.today()
 
-            start_date = input("Enter rental **start date** (YYYY-MM-DD): ").strip()
-            end_date = input("Enter rental **end date** (YYYY-MM-DD): ").strip()
+            start_date = input("Enter rental start date (YYYY-MM-DD): ").strip()
+            end_date = input("Enter rental end date (YYYY-MM-DD): ").strip()
 
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
             end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
@@ -100,7 +95,6 @@ class BookingManager:
         print(f"Final cost after discount: ${final_cost}")
 
         # Generate unique booking ID
-        import uuid
         booking_id = f"BOOK-{str(uuid.uuid4())[:8]}"
 
         # Deduct used loyalty points from user's account
@@ -117,17 +111,10 @@ class BookingManager:
 
 
     def get_car_rate(self, bonus_points):
-        """
-        Determines the rental base rate based on bonus points.
-        """
         rate_mapping = {10: 50, 20: 100, 30: 150}
         return rate_mapping.get(bonus_points, 50)  # Defaults to 50 if bonus points are invalid
 
     def approve_rental(self):
-        """
-        Admin reviews and approves or disapproves rental requests.
-        If approved, loyalty points are added to the customer based on rental duration.
-        """
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM rentals WHERE status = 'Pending'")
@@ -179,11 +166,11 @@ class BookingManager:
                 conn.commit()
                 conn.close()
 
-                print(f"Rental request {booking_id} has been **approved**. {total_loyalty_points} loyalty points added to {rental[1]}.")
+                print(f"Rental request {booking_id} has been approved. {total_loyalty_points} loyalty points added to {rental[1]}.")
 
         elif decision == "no":
             status = "Rejected"
-            print(f"Rental request {booking_id} has been **disapproved**.")
+            print(f"Rental request {booking_id} has been disapproved.")
         else:
             print("Invalid input. Please enter 'yes' to approve or 'no' to disapprove.")
             return
@@ -194,6 +181,3 @@ class BookingManager:
         cursor.execute("UPDATE rentals SET status = ? WHERE booking_id = ?", (status, booking_id))
         conn.commit()
         conn.close()
-
-
-        # print(f"Rental request {booking_id} has been updated.")
