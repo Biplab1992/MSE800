@@ -1,10 +1,8 @@
 import sqlite3
 import os
 
-# Set the correct path for rental_system.db inside Car_Rental_System/database
-BASE_DIR = os.path.abspath(os.path.join(os.getcwd(), "Car_Rental_System"))  # Ensure correct base path
-DB_DIR = os.path.join(BASE_DIR, "database")  # Database folder path
-DB_PATH = os.path.join(DB_DIR, "rental_system.db")  # SQLite database file path
+# Define the database path directly
+DB_PATH = os.path.join("Car_Rental_System", "database", "rental_system.db")
 
 # # Ensure database directory exists
 # os.makedirs(DB_DIR, exist_ok=True)

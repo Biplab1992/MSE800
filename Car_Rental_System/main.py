@@ -29,33 +29,24 @@ def main():
             print("Invalid option. Please choose a number between 1 and 3.")
 
 def customer_menu(email):
-    """
-    Displays the customer menu after login.
-    """
     while True:
         print("\n--- Customer Menu ---")
         print("1. View Available Cars & Request Rental")
         print("2. View Loyalty Points")
-        print("3. Redeem Loyalty Points")
-        print("4. Logout")
-        choice = input("Enter your choice (1-4): ").strip()
+        print("3. Logout")
+        choice = input("Enter your choice (1-3): ").strip()
 
         if choice == "1":
             booking_manager.request_rental(email)  # Calls the rental process directly
         elif choice == "2":
             user_manager.view_loyalty_points(email)
         elif choice == "3":
-            user_manager.redeem_loyalty_points(email)
-        elif choice == "4":
             print("Logging out...")
             break
         else:
             print("Invalid choice. Try again.")
 
 def admin_menu(email):
-    """
-    Displays the admin menu after login.
-    """
     while True:
         print("\n--- Admin Menu ---")
         print("1. Add Car")

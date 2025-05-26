@@ -2,6 +2,7 @@ import database
 import sqlite3
 import os
 
+# Define the database path directly
 DB_PATH = os.path.join("Car_Rental_System", "database", "rental_system.db")
 
 class UserManager:
@@ -43,27 +44,3 @@ class UserManager:
             print(f"\nYour loyalty points: {user[4]}")
         else:
             print("\nError: User not found.")
-
-    def redeem_loyalty_points(self, email):
-        """Allows a customer to redeem loyalty points."""
-        user = database.get_user(email)
-
-        if not user:
-            print("\nError: User not found.")
-            return
-
-        loyalty_points = user[4]
-
-        if loyalty_points < 100:
-            print("\nRedemption failed: You need at least 100 loyalty points to redeem rewards.")
-            return
-
-        # Deduct 100 points and update database
-        new_points = loyalty_points - 100
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("UPDATE users SET loyalty_points = ? WHERE email = ?", (new_points, email))
-        conn.commit()
-        conn.close()
-
-        print(f"\nRedemption successful! 100 points deducted. Your new balance: {new_points} points.")

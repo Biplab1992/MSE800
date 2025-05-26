@@ -2,10 +2,7 @@ import sqlite3
 import database
 import os
 
-# Ensure correct database path within Car_Rental_System/database
-BASE_DIR = os.path.abspath(os.path.join(os.getcwd(), "Car_Rental_System"))
-DB_DIR = os.path.join(BASE_DIR, "database")
-DB_PATH = os.path.join(DB_DIR, "rental_system.db")
+DB_PATH = os.path.join("Car_Rental_System", "database", "rental_system.db")
 
 class CarManager:
     def add_car(self):
@@ -52,7 +49,7 @@ class CarManager:
         Admin updates car details after viewing available cars.
         """
         print("\n--- Available Cars ---")
-        self.list_cars()  # Show cars before updating
+        self.list_cars()
         
         car_id = input("\nEnter the Car ID to update: ").strip()
         
