@@ -10,11 +10,17 @@ class CarManager:
         available = input("Is the car available (yes/no)? ").strip().lower() == "yes"
         min_rent_period = int(input("Enter min rental period in days: "))
         max_rent_period = int(input("Enter max rental period in days: "))
-        bonus_points = int(input("Enter bonus loyalty points for this car (10 for standard / 20 for premium / 30 for luxury vehicles): "))
-        
-        if bonus_points not in [10, 20, 30]:  # Restrict to predefined values
-            print("Invalid bonus points! Setting bonus points to 0.")
-            bonus_points = 0
+       
+        while True:
+            try:
+                bonus_points = int(input("Enter bonus loyalty points for this car (10 for standard / 20 for premium / 30 for luxury vehicles): "))
+                if bonus_points in [10, 20, 30]:  # Only accept 10, 20, or 30
+                    break
+                else:
+                    print("Invalid bonus points! Please enter either 10, 20, or 30.")
+            except ValueError:
+                print("Invalid input! Please enter a number.")
+
 
         database.add_car(car_id, make, model, year, mileage, available, min_rent_period, max_rent_period, bonus_points)
         print(f"Car added successfully. Bonus loyalty points: {bonus_points}")
