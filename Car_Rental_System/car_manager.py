@@ -59,4 +59,9 @@ class CarManager:
         Admin deletes a car from the system.
         """
         car_id = input("Enter car ID to delete: ").strip()
+        
+        # Call the delete function from database.py
         database.delete_car(car_id)
+
+        # Print confirmation message
+        print(f"Car {car_id} has been successfully deleted.")
