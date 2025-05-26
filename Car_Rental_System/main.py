@@ -18,10 +18,10 @@ def main():
             user_manager.register_user()
         elif choice == "2":
             role, email = user_manager.login_user()
-            if role == "customer":
+            if role and role.lower() == "customer":
                 customer_menu(email)
-            elif role == "admin":
-                admin_menu()
+            elif role and role.lower() == "admin":
+                admin_menu(email)
         elif choice == "3":
             print("Exiting the system. Goodbye!")
             break
@@ -52,7 +52,7 @@ def customer_menu(email):
         else:
             print("Invalid choice. Try again.")
 
-def admin_menu():
+def admin_menu(email):
     """
     Displays the admin menu after login.
     """
@@ -63,27 +63,32 @@ def admin_menu():
         print("3. Update Car")
         print("4. Delete Car")
         print("5. Approve Rental Requests")
-        print("6. Update Car Loyalty Points")
-        print("7. Logout")
-        choice = input("Enter your choice (1-7): ").strip()
+        print("6. Logout")
+        choice = input("Enter your choice (1-6): ").strip()
 
         if choice == "1":
             car_manager.add_car()
         elif choice == "2":
             car_manager.list_cars()
         elif choice == "3":
-            car_manager.update_car()
+            update_car_workflow()
         elif choice == "4":
             car_manager.delete_car()
         elif choice == "5":
             booking_manager.approve_rental()
         elif choice == "6":
-            car_manager.update_car_loyalty_points()
-        elif choice == "7":
             print("Logging out...")
             break
         else:
             print("Invalid choice. Try again.")
+
+def update_car_workflow():
+    """
+    Ensures a smooth workflow for updating cars.
+    """
+    car_manager.list_cars()  # First, show available cars for better decision-making
+    print("\nEnter the Car ID to update:")
+    car_manager.update_car()
 
 if __name__ == "__main__":
     main()
