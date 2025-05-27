@@ -1,8 +1,4 @@
-import sqlite3
-import database
-import os
-
-DB_PATH = os.path.join("Car_Rental_System", "database", "rental_system.db")
+import database  # This is your Firebase-based database module
 
 class CarManager:
     def add_car(self):
@@ -34,7 +30,11 @@ class CarManager:
         if cars:
             print("\n--- Car List ---")
             for car in cars:
-                print(f"Car ID: {car[0]}, Make: {car[1]}, Model: {car[2]}, Year: {car[3]}, Mileage: {car[4]}, Available: {'Yes' if car[5] else 'No'}, Min Days: {car[6]}, Bonus Points: {car[8]}")
+                # car is now a dictionary with keys: car_id, make, model, year, mileage, available, min_rent_period, max_rent_period, bonus_points
+                available_str = "Yes" if car.get("available") else "No"
+                print(f"Car ID: {car.get('car_id')}, Make: {car.get('make')}, Model: {car.get('model')}, "
+                      f"Year: {car.get('year')}, Mileage: {car.get('mileage')}, Available: {available_str}, "
+                      f"Min Days: {car.get('min_rent_period')}, Max Days: {car.get('max_rent_period')}, Bonus Points: {car.get('bonus_points')}")
         else:
             print("No cars available in the system.")
 
@@ -44,29 +44,33 @@ class CarManager:
         
         car_id = input("\nEnter the Car ID to update: ").strip()
         
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM cars WHERE car_id = ?", (car_id,))
-        car = cursor.fetchone()
-        conn.close()
+        # Retrieve all cars from Firebase and check if provided car_id exists.
+        cars = database.list_cars()
+        selected_car = None
+        for car in cars:
+            if car.get("car_id") == car_id:
+                selected_car = car
+                break
 
-        if not car:
+        if not selected_car:
             print(f"Error: Car ID {car_id} not found. Please enter a valid ID.")
             return
 
         updated_info = {}
 
-        # Prompt for new values
+        # Prompt for new values for certain fields.
         for key in ["make", "model", "year", "mileage", "min_rent_period", "max_rent_period"]:
             new_value = input(f"Enter new {key} (leave blank to keep current): ").strip()
             if new_value:
-                updated_info[key] = int(new_value) if key in ["year", "mileage", "min_rent_period", "max_rent_period"] else new_value
+                if key in ["year", "mileage", "min_rent_period", "max_rent_period"]:
+                    updated_info[key] = int(new_value)
+                else:
+                    updated_info[key] = new_value
 
-        # Ensure valid input for availability
         new_value = input("Is the car available (yes/no)? ").strip().lower()
         updated_info["available"] = 1 if new_value == "yes" else 0
 
-        # Ensure valid bonus points input
+        # Ensure valid bonus points input.
         while True:
             try:
                 bonus_points = int(input("Enter bonus loyalty points for this car (10 for standard / 20 for premium / 30 for luxury vehicles): "))
@@ -83,9 +87,5 @@ class CarManager:
 
     def delete_car(self):
         car_id = input("Enter car ID to delete: ").strip()
-        
-        # Call the delete function from database.py
         database.delete_car(car_id)
-
-        # Print confirmation message
         print(f"Car {car_id} has been successfully deleted.")

@@ -18,10 +18,13 @@ def main():
             user_manager.register_user()
         elif choice == "2":
             role, email = user_manager.login_user()
-            if role and role.lower() == "customer":
-                customer_menu(email)
-            elif role and role.lower() == "admin":
-                admin_menu(email)
+            if role:
+                if role.lower() == "customer":
+                    customer_menu(email)
+                elif role.lower() == "admin":
+                    admin_menu(email)
+                else:
+                    print("Role not recognized. Please contact support.")
         elif choice == "3":
             print("Exiting the system. Goodbye!")
             break
@@ -37,7 +40,8 @@ def customer_menu(email):
         choice = input("Enter your choice (1-3): ").strip()
 
         if choice == "1":
-            booking_manager.request_rental(email)  # Calls the rental process directly
+            # Calls the rental process (which includes payment simulation)
+            booking_manager.request_rental(email)
         elif choice == "2":
             user_manager.view_loyalty_points(email)
         elif choice == "3":
@@ -54,8 +58,9 @@ def admin_menu(email):
         print("3. Update Car")
         print("4. Delete Car")
         print("5. Approve Rental Requests")
-        print("6. Logout")
-        choice = input("Enter your choice (1-6): ").strip()
+        print("6. Check Customer Records")
+        print("7. Logout")
+        choice = input("Enter your choice (1-7): ").strip()
 
         if choice == "1":
             car_manager.add_car()
@@ -68,6 +73,9 @@ def admin_menu(email):
         elif choice == "5":
             booking_manager.approve_rental()
         elif choice == "6":
+            cust_email = input("Enter customer email to view records: ").strip()
+            user_manager.check_customer_records(cust_email)
+        elif choice == "7":
             print("Logging out...")
             break
         else:

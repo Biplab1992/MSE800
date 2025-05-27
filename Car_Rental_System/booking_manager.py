@@ -1,10 +1,9 @@
-import sqlite3
 import database
 import uuid
 import datetime
-import os
-
-DB_PATH = os.path.join("Car_Rental_System", "database", "rental_system.db")
+from firebase_admin import firestore  # For Increment operations
+from database import get_users_collection  # To update the user's loyalty points
+import payment_gateway  # Import the simulated payment gateway module
 
 class BookingManager:
     def request_rental(self, customer_email):
@@ -15,169 +14,151 @@ class BookingManager:
             print("No cars are available for rental.")
             return
 
+        # Display available cars
         for car in cars:
-            print(f"Car ID: {car[0]}, Make: {car[1]}, Model: {car[2]}, Year: {car[3]}, Mileage: {car[4]}, Available: {'Yes' if car[5] else 'No'}, Min Days: {car[6]}, Bonus Points: {car[8]}")
+            available_str = "Yes" if car.get("available") else "No"
+            print(f"Car ID: {car.get('car_id')}, Make: {car.get('make')}, Model: {car.get('model')}, "
+                  f"Year: {car.get('year')}, Mileage: {car.get('mileage')}, Available: {available_str}, "
+                  f"Min Days: {car.get('min_rent_period')}, Bonus Points: {car.get('bonus_points')}")
 
-        # Customer selects a car
         car_id = input("\nEnter the Car ID you want to rent: ").strip()
+        selected_car = next((car for car in cars if car.get("car_id") == car_id), None)
 
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM cars WHERE car_id = ?", (car_id,))
-        selected_car = cursor.fetchone()
-        conn.close()
-
-        if not selected_car:
-            print(f"Error: Car ID {car_id} not found. Please enter a valid ID.")
-            return
-
-        # Check car availability before booking
-        if selected_car[5] == 0:
-            print(f"Sorry, the {selected_car[1]} {selected_car[2]} (ID: {car_id}) is not available for rental right now.")
+        if not selected_car or not selected_car.get("available"):
+            print(f"Error: Car ID {car_id} is either invalid or unavailable.")
             return
 
         # Enter rental dates
         try:
             today = datetime.date.today()
-
             start_date = input("Enter rental start date (YYYY-MM-DD): ").strip()
             end_date = input("Enter rental end date (YYYY-MM-DD): ").strip()
 
             start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
             end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
 
-            if start_date_obj < today:
-                print("Error: Start date cannot be in the past.")
-                return
-
-            if end_date_obj <= start_date_obj:
-                print("Error: End date must be after the start date.")
+            if start_date_obj < today or end_date_obj <= start_date_obj:
+                print("Error: Invalid rental date range.")
                 return
 
             rental_days = (end_date_obj - start_date_obj).days
-            
-            if rental_days < selected_car[6]:
-                print(f"Error: Minimum rental period for this car is {selected_car[6]} days.")
+            if rental_days < selected_car.get("min_rent_period"):
+                print(f"Error: Minimum rental period is {selected_car.get('min_rent_period')} days.")
                 return
-            
+
         except ValueError:
-            print("Invalid date format! Please enter dates in YYYY-MM-DD.")
+            print("Invalid date format! Please use YYYY-MM-DD.")
             return
 
-        # Fetch user's loyalty points
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("SELECT loyalty_points FROM users WHERE email = ?", (customer_email,))
-        user_points = cursor.fetchone()
-        conn.close()
+        # Fetch user's loyalty points from Firestore
+        user = database.get_user(customer_email)
+        available_points = user.get("loyalty_points", 0) if user else 0
 
-        available_points = user_points[0] if user_points else 0
-
-        # Calculate rental cost based on bonus points per day
-        base_rate = self.get_car_rate(selected_car[8])
+        # Calculate rental cost
+        base_rate = self.get_car_rate(selected_car.get("bonus_points"))
         total_rental_cost = base_rate * rental_days
 
-        # Ask if customer wants to redeem points (Only if they have 100+ points)
-        discount = 0
-        if available_points >= 100:
-            use_points = input(f"You have {available_points} loyalty points. Do you want to redeem them to reduce the cost? (yes/no): ").strip().lower()
-            if use_points == "yes":
-                discount = min(available_points, total_rental_cost)
+        # Option to redeem loyalty points
+        discount = min(available_points, total_rental_cost) if available_points >= 100 else 0
+        if discount > 0:
+            use_points = input(f"You have {available_points} loyalty points. Use them for a discount? (yes/no): ").strip().lower()
+            if use_points != "yes":
+                discount = 0
 
-        # Calculate final cost after discount
         final_cost = max(total_rental_cost - discount, 0)
 
         print("\n--- Rental Cost Calculation ---")
-        print(f"Base rate: ${base_rate} per day (Based on Bonus Points: {selected_car[8]})")
-        print(f"Rental duration: {rental_days} days ({start_date} to {end_date})")
-        print(f"Total cost before loyalty discount: ${total_rental_cost}")
-        print(f"Loyalty points applied: ${discount}")
+        print(f"Base rate: ${base_rate}/day (Bonus Points: {selected_car.get('bonus_points')})")
+        print(f"Rental duration: {rental_days} days ({start_date} - {end_date})")
+        print(f"Total cost before discount: ${total_rental_cost}")
+        print(f"Discount applied: ${discount}")
         print(f"Final cost after discount: ${final_cost}")
+
+        # **NEW: Simulated Payment Prompt via eSewa**
+        payment_success = payment_gateway.process_payment(customer_email, final_cost)
+        if not payment_success:
+            print("Payment was not completed. Rental request canceled.")
+            return
 
         # Generate unique booking ID
         booking_id = f"BOOK-{str(uuid.uuid4())[:8]}"
 
         # Deduct used loyalty points from user's account
         new_points = available_points - discount if discount > 0 else available_points
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("UPDATE users SET loyalty_points = ? WHERE email = ?", (new_points, customer_email))
-        conn.commit()
-        conn.close()
+        get_users_collection().document(customer_email).update({"loyalty_points": new_points})
 
-        # Store rental request in database
+        # Store rental request in Firestore
         database.add_rental(booking_id, customer_email, car_id, rental_days, final_cost)
         print(f"\nRental request submitted successfully! Booking ID: {booking_id}")
 
-
     def get_car_rate(self, bonus_points):
         rate_mapping = {10: 50, 20: 100, 30: 150}
-        return rate_mapping.get(bonus_points, 50)  # Defaults to 50 if bonus points are invalid
+        return rate_mapping.get(bonus_points, 50)  # Default rate is 50 if bonus points are invalid
 
     def approve_rental(self):
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM rentals WHERE status = 'Pending'")
-        pending_rentals = cursor.fetchall()
-        conn.close()
+        rentals = database.list_rentals()
+        pending_rentals = [r for r in rentals if r.get("status") == "Pending"]
 
         if not pending_rentals:
-            print("\nThere are no approval rental requests pending.")
+            print("\nNo pending rental approvals.")
             return
-        
+
         print("\n--- Pending Rental Requests ---")
         for rental in pending_rentals:
-            print(f"Booking ID: {rental[0]}, Customer: {rental[1]}, Car ID: {rental[2]}, Rental Days: {rental[3]}, Total Cost: ${rental[4]}")
-
-        # Approve or disapprove rental request
+            print(f"Booking ID: {rental.get('booking_id')}, Customer: {rental.get('customer_email')}, "
+                f"Car ID: {rental.get('car_id')}, Rental Days: {rental.get('rental_days')}, Total Cost: ${rental.get('total_cost')}")
+        
+        # Select a booking for review
         booking_id = input("\nEnter Booking ID to review: ").strip()
-
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM rentals WHERE booking_id = ?", (booking_id,))
-        rental = cursor.fetchone()
-        conn.close()
-
-        if not rental:
-            print(f"Error: Booking ID {booking_id} not found. Please enter a valid ID.")
+        selected_rental = next((r for r in pending_rentals if r.get("booking_id") == booking_id), None)
+        
+        if not selected_rental:
+            print(f"Error: Booking ID {booking_id} not found.")
             return
 
-        # Admin decision
-        decision = input("Approve this rental request? (yes/no): ").strip().lower()
+        # Display customer records (rental & payment history)
+        customer_email = selected_rental.get("customer_email")
+        rental_history = database.get_customer_rentals(customer_email)
+        payment_history = database.get_customer_payments(customer_email)
 
+        print("\n--- Customer Records ---")
+        if rental_history:
+            print("\nRental History:")
+            for rental in rental_history:
+                print(f"Booking ID: {rental.get('booking_id')}, Car ID: {rental.get('car_id')}, Days: {rental.get('rental_days')}, "
+                    f"Total Cost: ${rental.get('total_cost')}, Status: {rental.get('status')}")
+        else:
+            print("\nNo rental history found.")
+
+        if payment_history:
+            print("\nPayment History:")
+            print(f"Amount Paid: ${payment_history.get('amount')}")
+            print(f"Payment Status: {payment_history.get('status')}")
+        else:
+            print("\nNo payment records found.")
+
+        # Admin decision for approval
+        decision = input("Approve rental request? (yes/no): ").strip().lower()
         if decision == "yes":
             status = "Approved"
-
-            # Fetch car's bonus points
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-            cursor.execute("SELECT bonus_points FROM cars WHERE car_id = ?", (rental[2],))
-            car_bonus_points = cursor.fetchone()
-            conn.close()
-
-            if car_bonus_points:
-                bonus_points = car_bonus_points[0]
-                total_loyalty_points = bonus_points * rental[3]  # Multiply points by rental days
-
-                # Update customer loyalty points
-                conn = sqlite3.connect(DB_PATH)
-                cursor = conn.cursor()
-                cursor.execute("UPDATE users SET loyalty_points = loyalty_points + ? WHERE email = ?", (total_loyalty_points, rental[1]))
-                conn.commit()
-                conn.close()
-
-                print(f"Rental request {booking_id} has been approved. {total_loyalty_points} loyalty points added to {rental[1]}.")
-
-        elif decision == "no":
-            status = "Rejected"
-            print(f"Rental request {booking_id} has been disapproved.")
+            print(f"\nRental request {booking_id} has been approved.")
         else:
-            print("Invalid input. Please enter 'yes' to approve or 'no' to disapprove.")
-            return
+            status = "Rejected"
+            print(f"\nRental request {booking_id} has been rejected.")
 
-        # Update rental status in database
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("UPDATE rentals SET status = ? WHERE booking_id = ?", (status, booking_id))
-        conn.commit()
-        conn.close()
+        # If approved, update loyalty points for the customer
+        if status == "Approved":
+            cars = database.list_cars()
+            car = next((c for c in cars if c.get("car_id") == selected_rental.get("car_id")), None)
+            if car:
+                bonus_points = car.get("bonus_points")
+                total_loyalty_points = bonus_points * selected_rental.get("rental_days")
+                get_users_collection().document(customer_email).update({
+                    "loyalty_points": firestore.Increment(total_loyalty_points)
+                })
+                print(f"{total_loyalty_points} loyalty points added to {customer_email}.")
+            else:
+                print("Car not found. Cannot update loyalty points.")
+
+        # Finally, update the rental status in Firestore
+        database.update_rental_status(booking_id, status)

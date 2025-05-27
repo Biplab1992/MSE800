@@ -1,124 +1,138 @@
-import sqlite3
-import os
+import firebase_admin
+from firebase_admin import credentials, firestore
 
-DB_PATH = os.path.join("Car_Rental_System", "database", "rental_system.db")
+# --------------------------
+# Firebase Initialization
+# --------------------------
+cred = credentials.Certificate(r"C:\Users\BEEPLOVE\Documents\GitHub\MSE800\Car_Rental_System\serviceAccount.json")
+firebase_admin.initialize_app(cred)
 
-def create_tables():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+# Get Firestore client
+db = firestore.client()
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            email TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            password TEXT NOT NULL,
-            role TEXT NOT NULL CHECK (role IN ('customer', 'admin')),
-            loyalty_points INTEGER DEFAULT 0
-        )
-    """)
+# --------------------------
+# Helper functions for directories
+# --------------------------
+def get_users_collection():
+    return db.collection("Car_Rental_System").document("UsersDirectory").collection("users")
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS cars (
-            car_id TEXT PRIMARY KEY,
-            make TEXT NOT NULL,
-            model TEXT NOT NULL,
-            year INTEGER NOT NULL,
-            mileage INTEGER NOT NULL,
-            available INTEGER NOT NULL CHECK (available IN (0,1)),
-            min_rent_period INTEGER NOT NULL,
-            max_rent_period INTEGER NOT NULL,
-            bonus_points INTEGER DEFAULT 0 CHECK (bonus_points IN (10, 20, 30))
-        )
-    """)
+def get_cars_collection():
+    return db.collection("Car_Rental_System").document("CarsDirectory").collection("cars")
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS rentals (
-            booking_id TEXT PRIMARY KEY,
-            customer_email TEXT NOT NULL,
-            car_id TEXT NOT NULL,
-            rental_days INTEGER NOT NULL,
-            total_cost REAL NOT NULL,
-            status TEXT DEFAULT 'Pending' CHECK (status IN ('Pending', 'Approved', 'Rejected')),
-            FOREIGN KEY(customer_email) REFERENCES users(email),
-            FOREIGN KEY(car_id) REFERENCES cars(car_id)
-        )
-    """)
+def get_rentals_collection():
+    return db.collection("Car_Rental_System").document("RentalDirectory").collection("Rentals")
 
-    conn.commit()
-    conn.close()
+def get_payments_collection():
+    """
+    Returns a reference to the 'payments' subcollection under 'PaymentsDirectory'
+    in the 'Car_Rental_System' collection.
+    """
+    return db.collection("Car_Rental_System").document("PaymentsDirectory").collection("payments")
 
-if __name__ == "__main__":
-    create_tables()
-
+# --------------------------
 # User Management Functions
+# --------------------------
 def add_user(name, email, password, role="customer"):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO users (email, name, password, role) VALUES (?, ?, ?, ?)", (email, name, password, role))
-    conn.commit()
-    conn.close()
+    user_data = {
+        "name": name,
+        "password": password,
+        "role": role,
+        "loyalty_points": 0
+    }
+    get_users_collection().document(email).set(user_data)
+    print(f"User '{name}' added successfully.")
 
 def get_user(email):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE email=?", (email,))
-    user = cursor.fetchone()
-    conn.close()
-    return user
+    doc = get_users_collection().document(email).get()
+    return doc.to_dict() if doc.exists else None
 
+# --------------------------
 # Car Management Functions
+# --------------------------
 def add_car(car_id, make, model, year, mileage, available, min_rent_period, max_rent_period, bonus_points):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO cars (car_id, make, model, year, mileage, available, min_rent_period, max_rent_period, bonus_points) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-                   (car_id, make, model, year, mileage, available, min_rent_period, max_rent_period, bonus_points))
-    conn.commit()
-    conn.close()
+    car_data = {
+        "make": make,
+        "model": model,
+        "year": year,
+        "mileage": mileage,
+        "available": bool(available),
+        "min_rent_period": min_rent_period,
+        "max_rent_period": max_rent_period,
+        "bonus_points": bonus_points
+    }
+    get_cars_collection().document(car_id).set(car_data)
+    print(f"Car {make} {model} (ID: {car_id}) added successfully.")
 
 def list_cars():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM cars")
-    cars = cursor.fetchall()
-    conn.close()
-    return cars
+    cars_ref = get_cars_collection()
+    return [{**doc.to_dict(), "car_id": doc.id} for doc in cars_ref.stream()]
 
 def update_car(car_id, updated_info):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    for key, value in updated_info.items():
-        cursor.execute(f"UPDATE cars SET {key} = ? WHERE car_id = ?", (value, car_id))
-    conn.commit()
-    conn.close()
+    get_cars_collection().document(car_id).update(updated_info)
+    print(f"Car {car_id} updated successfully.")
 
 def delete_car(car_id):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM cars WHERE car_id=?", (car_id,))
-    conn.commit()
-    conn.close()
-    print(f"Car {car_id} has been successfully deleted.")
+    get_cars_collection().document(car_id).delete()
+    print(f"Car {car_id} deleted successfully.")
 
+# --------------------------
 # Rental Management Functions
+# --------------------------
 def add_rental(booking_id, customer_email, car_id, rental_days, total_cost):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO rentals (booking_id, customer_email, car_id, rental_days, total_cost) VALUES (?, ?, ?, ?, ?)",
-                   (booking_id, customer_email, car_id, rental_days, total_cost))
-    conn.commit()
-    conn.close()
+    rental_data = {
+        "customer_email": customer_email,
+        "car_id": car_id,
+        "rental_days": rental_days,
+        "total_cost": total_cost,
+        "status": "Pending"
+    }
+    get_rentals_collection().document(booking_id).set(rental_data)
+    print(f"Rental booking '{booking_id}' added successfully.")
 
 def list_rentals():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM rentals")
-    rentals = cursor.fetchall()
-    conn.close()
-    return rentals
+    rentals_ref = get_rentals_collection()
+    return [{**doc.to_dict(), "booking_id": doc.id} for doc in rentals_ref.stream()]
 
 def update_rental_status(booking_id, status):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE rentals SET status = ? WHERE booking_id = ?", (status, booking_id))
-    conn.commit()
-    conn.close()
+    get_rentals_collection().document(booking_id).update({"status": status})
+
+# --------------------------
+# Payment Processing Functions (NEW)
+# --------------------------
+def record_payment(customer_email, amount):
+    """
+    Stores payment transaction details in Firestore under:
+    Car_Rental_System/PaymentsDirectory/payments/{customer_email}
+    """
+    payment_data = {
+        "customer_email": customer_email,
+        "amount": amount,
+        "status": "Completed"
+    }
+    get_payments_collection().document(customer_email).set(payment_data)
+    print(f"Payment record saved for {customer_email}.")
+
+def get_payment_history(customer_email):
+    """
+    Retrieves payment records for a specific customer.
+    Returns None if no record exists.
+    """
+    doc = get_payments_collection().document(customer_email).get()
+    return doc.to_dict() if doc.exists else None
+
+def get_customer_rentals(customer_email):
+    """
+    Retrieves all rental records for a specific customer from Firestore.
+    """
+    rentals_ref = get_rentals_collection()
+    docs = rentals_ref.where("customer_email", "==", customer_email).stream()
+    
+    rental_history = [doc.to_dict() for doc in docs]
+    return rental_history if rental_history else None
+
+def get_customer_payments(customer_email):
+    """
+    Retrieves payment history for a specific customer from Firestore.
+    """
+    doc = get_payments_collection().document(customer_email).get()
+    return doc.to_dict() if doc.exists else None
