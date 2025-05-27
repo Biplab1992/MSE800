@@ -2,11 +2,16 @@ import database
 
 class UserManager:
     def register_user(self):
+        """
+        Registers a new user by collecting their details,
+        checking for existing accounts, and saving new accounts in the database.
+        """
         name = input("Enter your full name: ").strip()
         email = input("Enter your email: ").strip()
         password = input("Enter your password: ").strip()
         role = input("Enter user role (customer/admin): ").strip().lower()
 
+        # Check if a user with the given email already exists.
         if database.get_user(email):
             print(f"Registration failed: A user with email '{email}' already exists.")
         else:
@@ -14,12 +19,16 @@ class UserManager:
             print(f"User {name} registered successfully with role: {role}")
 
     def login_user(self):
+        """
+        Authenticates a user by checking the email and password.
+        Returns a tuple (role, email) upon successful login; otherwise (None, None).
+        """
         email = input("Enter your email: ").strip()
         password = input("Enter your password: ").strip()
         user = database.get_user(email)
 
         if user:
-            if user.get("password") == password:  # Validate password
+            if user.get("password") == password:
                 print(f"User {user.get('name')} logged in successfully as {user.get('role')}.")
                 return user.get("role"), email
             else:
@@ -30,16 +39,19 @@ class UserManager:
         return None, None
 
     def view_loyalty_points(self, email):
+        """
+        Displays the loyalty points associated with the given email.
+        """
         user = database.get_user(email)
-
         if user:
-            print(f"\nYour loyalty points: {user.get('loyalty_points')}")
+            # Provide a default of 0 if 'loyalty_points' is not present in the user record.
+            print(f"\nYour loyalty points: {user.get('loyalty_points', 0)}")
         else:
             print("\nError: User not found.")
 
     def view_payment_history(self, email):
         """
-        Retrieves a user's payment history from Firestore.
+        Retrieves and displays the user's payment history from the database.
         """
         payment_data = database.get_payment_history(email)
 
@@ -64,9 +76,11 @@ class UserManager:
         if rental_history:
             print("\nRental History:")
             for rental in rental_history:
-                print(f"Booking ID: {rental.get('booking_id')}, Car ID: {rental.get('car_id')}, "
-                      f"Days: {rental.get('rental_days')}, Total Cost: ${rental.get('total_cost')}, "
-                      f"Status: {rental.get('status')}")
+                print(
+                    f"Booking ID: {rental.get('booking_id')}, Car ID: {rental.get('car_id')}, "
+                    f"Days: {rental.get('rental_days')}, Total Cost: ${rental.get('total_cost')}, "
+                    f"Status: {rental.get('status')}"
+                )
         else:
             print("\nNo rental history found.")
 
