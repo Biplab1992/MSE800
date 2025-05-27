@@ -1,0 +1,134 @@
+use case diagram
+
+@startuml
+!define STEREOTYPE <<actor>>
+
+' Define Actors
+actor Customer <<actor>>
+actor Admin <<actor>>
+actor PaymentGateway <<actor>>
+
+rectangle "Car Rental System" {
+
+    ' Common registration and login use cases for both customers and admins
+    Customer --> (Register Account)
+    Admin --> (Register Account)
+    Customer --> (Login)
+    Admin --> (Login)
+    
+    ' Customer Use Cases
+    Customer --> (View Loyalty Points)
+    Customer --> (List Cars)
+    Customer --> (Request Rental)
+    
+    ' Rental flow: Request Rental always includes the payment process
+    (Request Rental) --> (Make Payment) : <<include>>
+    (Make Payment) --> (Confirm Payment) : <<include>>
+    PaymentGateway --> (Confirm Payment)
+    ' Optional extension: customer may redeem loyalty points
+    (Use Loyalty Points) ..> (Make Payment) : <<extend>>
+    
+    ' Admin Car Management Use Cases
+    Admin --> (Add Car)
+    Admin --> (List Cars)
+    Admin --> (Update Car)
+    Admin --> (Delete Car)
+    
+    ' Admin Rental Management Use Cases
+    Admin --> (List Rental Requests)
+    Admin --> (Approve Rental Request)
+    ' Optional extension: admin can check customer records while approving a rental request
+    (Check Customer Records) ..> (Approve Rental Request) : <<extend>>
+}
+@enduml
+
+
+class diagram
+
+@startuml
+' Define the BookingManager class
+class BookingManager {
+  + request_rental(customer_email: String) : bool
+  + get_car_rate(bonus_points: int) : int
+  + approve_rental() : bool
+}
+
+' Define the UserManager class
+class UserManager {
+  + register_user() : bool
+  + login_user() : (String, String)
+  + view_loyalty_points(email: String) : int
+}
+
+' Define the CarManager class
+class CarManager {
+  + add_car() : bool
+  + list_cars() : List<Map>
+  + update_car(car_id: String, updated_info: Map) : bool
+  + delete_car(car_id: String) : bool
+}
+
+' Define the PaymentGateway class (Payment simulation only)
+class PaymentGateway {
+  + process_payment(customer_email: String, amount: float) : bool
+}
+
+' Define the Database class with static methods
+class Database {
+  {static} + add_user(name: String, email: String, password: String, role: String) : bool
+  {static} + get_user(email: String) : Map
+  {static} + add_car(car_id: String, make: String, model: String, year: int, mileage: int, available: bool, min_rent_period: int, max_rent_period: int, bonus_points: int) : bool
+  {static} + list_cars() : List<Map>
+  {static} + update_car(car_id: String, updated_info: Map) : bool
+  {static} + delete_car(car_id: String) : bool
+  {static} + add_rental(booking_id: String, customer_email: String, car_id: String, rental_days: int, total_cost: float) : bool
+  {static} + list_rentals() : List<Map>
+  {static} + update_rental_status(booking_id: String, status: String) : bool
+  {static} + get_customer_rentals(customer_email: String) : List<Map>
+  {static} + get_customer_payments(customer_email: String) : Map
+}
+
+' --------------------------------------------------------------
+' Associations with descriptive labels
+BookingManager --> Database : "invokes rental record methods\n(add_rental, list_rentals, update_rental_status)"
+BookingManager --> PaymentGateway : "initiates payment processing simulation"
+UserManager --> Database : "handles user registration, login, and retrieval"
+CarManager --> Database : "manages car records (add, update, delete, list)"
+
+@enduml
+
+
+sequence diagram
+
+@startuml
+actor Customer
+
+participant "BookingManager" as BM
+participant "Database" as DB
+participant "PaymentGateway" as PG
+
+== Rental Request Flow ==
+Customer -> BM: request_rental(customer_email)
+BM -> DB: list_cars()
+DB --> BM: cars_list
+
+BM -> Customer: display available cars
+Customer -> BM: select_car, input rental dates & loyalty choice
+
+BM -> DB: get_user(customer_email)
+DB --> BM: user_record {loyalty_points, ...}
+
+BM -> BM: calculate rental details\n(base_rate, total cost, discount, final_cost)
+
+BM -> PG: process_payment(customer_email, final_cost)
+alt Payment Successful
+    PG --> BM: payment_success(true)
+    BM -> DB: add_rental(booking_id, customer_email, car_id,\n rental_days, final_cost)
+    BM -> DB: update_user_loyalty_points(customer_email, new_points)
+    BM -> Customer: display "Rental confirmed (Booking ID: ...)"
+else Payment Failed
+    PG --> BM: payment_success(false)
+    BM -> Customer: display "Payment failed. Rental canceled."
+end
+
+@enduml
