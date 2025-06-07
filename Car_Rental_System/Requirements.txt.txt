@@ -1,0 +1,7 @@
+** System Requirements **
+
+- Operating system: Windows
+- Python 3.6+ is installed on your system.
+- A valid Firebase project with Firebase enabled.
+- The Firebase Admin SDK service account JSON file. (Already included in the repository with name -"serviceAccount.Json")
+- Required Python packages: firebase-admin
