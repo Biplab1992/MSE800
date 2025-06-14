@@ -22,7 +22,7 @@ def check_win(board, player):
 
 # A function to check if the game is a tie
 def check_tie(board):
-    return all([spot in ['X', 'O'] for spot in board])
+    return all(spot in ['X', 'O'] for spot in board)
 
 # Main function to run the Tic Tac Toe game
 def tic_tac_toe():
@@ -37,6 +37,9 @@ def tic_tac_toe():
         except ValueError:
             print("Please enter a valid number from 1 to 9.")
             continue
+        except (EOFError, KeyboardInterrupt):
+            print("\nInput interrupted. Exiting the game.")
+            break
 
         # Validate move
         if move < 1 or move > 9:
