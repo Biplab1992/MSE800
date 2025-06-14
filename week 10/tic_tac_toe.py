@@ -8,7 +8,7 @@ def print_board(board):
     print(" {} | {} | {} ".format(board[6], board[7], board[8]))
     print("\n")
 
-# A function to check if a player has won or if the game is a tie
+# A function to check if a player has won the game
 def check_win(board, player):
     win_conditions = [
         (0, 1, 2), (3, 4, 5), (6, 7, 8),  # horizontal wins
