@@ -1,0 +1,63 @@
+
+def log_event(event_type, user_id, message):
+
+
+- **Purpose:**  
+  This defines a function named `log_event` that accepts three parameters:
+  - `event_type`: Describes the category or type of the event (e.g., ERROR, INFO, DEBUG).
+  - `user_id`: Identifies the user related to the event.
+  - `message`: Contains the information or details about the event.
+- **Docstring:**  
+  The function’s docstring clearly states its purpose:
+  
+  ```python
+  """Logs an event to a file with timestamp, event type, user ID, and message."""
+  ```
+  This inline documentation explains the behavior of the function for future reference and for anyone maintaining the code.
+
+---
+
+### 3. Generating a Timestamp
+
+```python
+timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+```
+
+- **Steps Involved:**  
+  - `datetime.datetime.now()` fetches the current date and time.
+  - `.strftime("%Y-%m-%d %H:%M:%S")` formats this datetime object into a string following the pattern of year-month-day hours:minutes:seconds.
+- **Why It’s Useful:**  
+  This timestamp provides a clear record of when the event occurred, which is essential for debugging and tracing past events.
+
+---
+
+### 4. Formatting the Log Message
+
+```python
+log_message = f"[{timestamp}] [{event_type}] User: {user_id} - {message}\n"
+```
+
+- **Use of f-string:**  
+  It constructs a well-formatted string that combines the timestamp, event type, user identification, and the message.
+- **Structure:**  
+  The log message format includes:
+  - The timestamp enclosed in square brackets.
+  - The event type in brackets.
+  - A label for the user followed by the user ID.
+  - The actual message.
+- **Newline (`\n`):**  
+  Appending a newline at the end ensures that each log entry is on its own line in the log file.
+
+---
+
+### 5. Writing the Log Message to a File
+
+```python
+with open("rental_log.txt", "a") as log_file:
+    log_file.write(log_message)
+```
+
+- **File Opening Mode 'a':**  
+  - Opens the file `rental_log.txt` in append mode so that new log messages are added to the end of the file without overwriting previous logs.
+- **Use of `with`:**  
+  - The context manager (`with` statement) guarantees that the file is properly closed after writing, even if an exception occurs during the file operation.
