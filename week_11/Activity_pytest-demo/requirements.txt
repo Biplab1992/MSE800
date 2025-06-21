@@ -1,1 +1,3 @@
 pytest
+
+This test suite verifies the functionality of a command-line engineering calculator. It performs basic arithmetic operations (addition, subtraction, multiplication, and division), including an edge case for division by zero, as well as trigonometric functions (sine, cosine, and tangent) using well-known angles from the math module. The directory path is configured at the start to ensure that the module imports correctly, and the tests are executed using `pytest` for clear and concise output.
