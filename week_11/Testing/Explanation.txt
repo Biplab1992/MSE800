@@ -1,0 +1,28 @@
+1. test_upper
+   - It verifies that converting the string `'foo'` to uppercase using the `.upper()` method produces the expected result `'FOO'`.  
+   - If `'foo'.upper()` returns exactly `'FOO'`, the test passes. Otherwise, it fails.
+
+2. test_isupper  
+   - It contains two assertions:  
+     - It asserts that the string `'FOO'` is completely uppercase (i.e., `isupper()` returns `True`).  
+     - It asserts that the string `'Foo'` is not completely uppercase (i.e., `isupper()` should return `False`).  
+   - Both conditions must hold true — if either the truth or the falsehood of the condition is not as expected, the test fails.
+
+3. test_split  
+     - It verifies that calling `.split()` on the string `'hello world'` results in the list `['hello', 'world']`.  
+     - It also checks error handling: it ensures that passing an integer `2` as a separator to the `.split()` method raises a `TypeError`.  
+     - Correct splitting returns the expected list, and giving an invalid separator should yield a specific exception. Any deviation causes a failure.
+
+4. Added Test: `test_isdigit 
+   - It asserts that calling `.isdigit()` on the string `'123'` returns `True`, confirming that the string contains only digit characters.
+   - If `'123'.isdigit()` indeed returns `True`, the test passes. If not, it will fail.
+
+
+
+
+For instance, if I modify the expected output in `test_upper` to an incorrect value like:
+
+self.assertEqual('foo'.upper(), 'Foo')
+
+then that test will fail. The output will include an `AssertionError` message showing the mismatch between `'FOO'` (the actual result) and `'Foo'` (the incorrect expected value). The test run summary will indicate the number of failures, and the process will exit with a non-zero status code.
+

@@ -1,0 +1,17 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Loader with Flask</title>
+</head>
+<body>
+    <h2>Flask Image Loading Example</h2>
+    <img id="loadedImage" src="{{ url_for('static', filename='images/example.jpg') }}" alt="Example Image" width="500">
+
+    <button onclick="changeImage()">Change Image</button>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
