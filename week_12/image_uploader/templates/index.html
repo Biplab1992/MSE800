@@ -1,18 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Image Uploader</title>
-</head>
-<body>
-    <h2>Upload an Image</h2>
-    <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="image" accept="image/*" required>
-        <button type="submit">Upload</button>
-    </form>
+<form method="POST" enctype="multipart/form-data">
+  <input type="file" name="image" required>
+  <button type="submit">Upload</button>
+</form>
 
-    {% if filename %}
-    <h3>Uploaded Image:</h3>
-    <img src="{{ url_for('static', filename='uploads/' ~ filename) }}" width="300">
-    {% endif %}
-</body>
-</html>
+{% if filename %}
+  <img src="{{ url_for('static', filename='uploads/' ~ filename) }}" width="300">
+{% endif %}
