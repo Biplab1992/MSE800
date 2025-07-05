@@ -1,0 +1,10 @@
+POST http://localhost:3000/itineraries
+Content-Type: application/json
+
+{
+  "location": "Rotorua",
+  "days": 2,
+  "interests": ["geothermal","culture"],
+  "language": "en-mi",
+  "pace": "relaxed"
+}
