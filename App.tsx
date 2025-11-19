@@ -1,20 +1,45 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { LanguageProvider } from './src/context/LanguageContext';
+import { AuthScreen } from './src/screens/AuthScreen';
+import { HomeSetupScreen } from './src/screens/HomeSetupScreen';
+import { HomeScreen } from './src/screens/HomeScreen';
+import { colors } from './src/theme/tokens';
+
+const RootContent = () => {
+  const { user, token, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.accent} />
+      </View>
+    );
+  }
+
+  if (!token || !user) {
+    return <AuthScreen />;
+  }
+
+  if (!user.home) {
+    return <HomeSetupScreen />;
+  }
+
+  return <HomeScreen />;
+};
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <LanguageProvider>
+          <StatusBar style="dark" />
+          <RootContent />
+        </LanguageProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

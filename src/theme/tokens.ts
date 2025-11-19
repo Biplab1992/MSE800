@@ -1,0 +1,25 @@
+export const colors = {
+  background: '#f5f5f7',
+  surface: '#ffffff',
+  text: '#0f172a',
+  mutedText: '#64748b',
+  border: '#e2e8f0',
+  accent: '#0ea5e9',
+  accentMuted: '#e0f2fe',
+  danger: '#ef4444',
+};
+
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+};
+
+export const radii = {
+  sm: 8,
+  md: 12,
+  lg: 20,
+  pill: 999,
+};
