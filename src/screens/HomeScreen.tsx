@@ -156,7 +156,7 @@ export const HomeScreen = () => {
             <Text style={styles.title}>{t.headingToday}</Text>
             {user?.home ? (
               <Text style={styles.eyebrow}>
-                {user.home.name} � {t.homeSetup.codeLabel}: {user.home.code}
+                {user.home.name} - {t.homeSetup.codeLabel}: {user.home.code}
               </Text>
             ) : null}
           </View>
@@ -281,3 +281,6 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
 });
+
+
+
